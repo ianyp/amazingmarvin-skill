@@ -1,6 +1,6 @@
 # Amazing Marvin feature coverage and phased roadmap
 
-Researched 2026-11-13 against the official [endpoint reference](https://help.amazingmarvin.com/amazing-marvin/api-endpoints). This is an API capability map, not a claim of implemented or exhaustively verified app parity. All features below are currently unimplemented in this repository.
+Researched 2026-11-13 against the official [endpoint reference](https://help.amazingmarvin.com/amazing-marvin/api-endpoints). This is an API capability map, not a claim of implemented or exhaustively verified app parity. Phase 1 core operations are implemented and offline-tested; other rows remain planned. No feature is live-verified. See DEVELOPMENT.md for exact delivery status.
 
 L = limited API token; F = full-access token; D = direct database credentials. A personal account supplies these; no separate developer account is required. Mock-based development needs none. Credentials are separate capabilities, never automatic fallbacks. An API token labelled limited still permits writes.
 

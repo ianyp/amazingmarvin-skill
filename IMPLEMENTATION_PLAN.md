@@ -1,6 +1,6 @@
 # Implementation plan
 
-Date: 2026-11-13. Status: ready for implementation; scope is a proposed baseline.
+Date: 2026-11-13. Status: core offline implementation complete; live/runtime verification pending. See DEVELOPMENT.md for actual results and documented plan adjustments.
 
 ## Expanded roadmap
 

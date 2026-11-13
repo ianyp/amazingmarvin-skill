@@ -32,12 +32,14 @@ class Client:
             headers['X-Auto-Complete'] = 'false'
         try:
             result = self._transport(method, path, headers, body)
+        except MarvinError:
+            raise
         except Exception:
             raise MarvinError('Request failed; verify remote state before repeating a write',
                               code='transport_error', outcome_unknown=method != 'GET') from None
         if isinstance(result, dict) and result.get('error'):
             raise MarvinError('Marvin returned an API error', code='api_error')
-        if array and not isinstance(result, list):
+        if array and (not isinstance(result, list) or any(not isinstance(item, dict) for item in result)):
             raise MarvinError('Unexpected API response', code='invalid_response')
         if method != 'GET' and not (result == 'OK' or isinstance(result, dict) and isinstance(result.get('_id'), str) and result['_id']):
             raise MarvinError('Unrecognized write receipt; verify remote state', code='invalid_response', outcome_unknown=True)
@@ -68,7 +70,37 @@ class Client:
             raise MarvinError('labelIds must be a list of nonempty IDs')
         if 'estimateMinutes' in body:
             minutes = body.pop('estimateMinutes')
-            if isinstance(minutes, bool) or not isinstance(minutes, (int, float)) or not math.isfinite(minutes) or minutes < 0:
+            if isinstance(minutes, bool) or not isinstance(minutes, (int, float)) or minutes < 0 or minutes > 9007199254740991 / 60000 or not math.isfinite(minutes):
                 raise MarvinError('Estimate must be finite nonnegative minutes')
             body['timeEstimate'] = round(minutes * 60000)
         return self._call('POST', 'addTask', body, literal=True)
+
+    def check_auth(self):
+        return self._call('POST', 'test')
+
+    def categories(self):
+        return self._call('GET', 'categories', array=True)
+
+    def labels(self):
+        return self._call('GET', 'labels', array=True)
+
+    def children(self, parent_id):
+        from urllib.parse import urlencode
+        if not isinstance(parent_id, str) or not parent_id.strip():
+            raise MarvinError('Parent ID required')
+        return self._call('GET', 'children?' + urlencode({'parentId': parent_id}), array=True)
+
+    def done(self, item_id, *, offset):
+        if not isinstance(item_id, str) or not item_id.strip():
+            raise MarvinError('Task ID required')
+        if isinstance(offset, bool) or not isinstance(offset, int) or not -840 <= offset <= 840:
+            raise MarvinError('Invalid timezone offset')
+        return self._call('POST', 'markDone', {'itemId': item_id, 'timeZoneOffset': offset})
+
+    @staticmethod
+    def resolve_task(items, query):
+        matches = [item for item in items if isinstance(item, dict) and
+                   (item.get('_id') == query or item.get('title') == query)]
+        if len(matches) != 1 or matches[0].get('db') != 'Tasks' or not matches[0].get('_id'):
+            raise MarvinError('Choose one unambiguous task ID', code='ambiguous_target')
+        return matches[0]['_id']

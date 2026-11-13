@@ -1,15 +1,30 @@
 # Amazing Marvin OpenClaw skill
 
-Early implementation: 13 offline tests pass; see [development status](DEVELOPMENT.md). No skill is installed and no Marvin account has been accessed.
+**Core offline build ready; not live-verified or installed.** 49 tests pass locally. No real account accessed.
 
-See [full feature coverage and roadmap](FEATURE_COVERAGE.md), [implementation plan](IMPLEMENTATION_PLAN.md), [TDD acceptance matrix](TEST_PLAN.md), and [research](RESEARCH.md).
+## Implemented
 
-## Proposed v1
+Today/due lists, category/label lookup, immediate project children, task capture, known-ID task completion and credential check. JSON CLI, limited-token authentication, rate accounting and uncertain-write protection.
 
-On-demand task capture, scheduled/due lists, category and label lookup, and task completion through Amazing Marvin's public API. No background polling, direct database access, or full-access token required.
+## Verify and package
 
-## Development contract
+Requires Linux and Python 3.11+ with timezone data; locally tested on Python 3.14. No third-party runtime dependencies.
 
-Use red → green → refactor for each behaviour. Write and run a failing test before implementation; record the failure and subsequent passing result in the implementation commit/PR. Tests run offline by default. The initial offline core is tested; production transport and skill packaging remain unfinished.
+```sh
+python -m unittest discover -s tests -v
+python tools/package_skill.py
+python skills/amazingmarvin/scripts/marvin.py --help
+```
 
-Repository is local-only until a remote destination is specified.
+Output: `dist/amazingmarvin-skill-offline.zip`. Live commands require MARVIN_API_TOKEN injected securely into the process environment; do not pass it in arguments or commit it. See [setup](skills/amazingmarvin/references/setup.md).
+
+## Documents
+
+- [Delivery report](REPORT.md)
+- [Implementation and TDD evidence](DEVELOPMENT.md)
+- [Implementation plan](IMPLEMENTATION_PLAN.md)
+- [Feature coverage and future phases](FEATURE_COVERAGE.md)
+- [Acceptance matrix](TEST_PLAN.md)
+- [Research](RESEARCH.md) and [reuse decision](REUSE_DECISION.md)
+
+The broader roadmap is not implemented. Live API tests, actual agent invocation and installation remain pending; no release tag or remote repository exists.
