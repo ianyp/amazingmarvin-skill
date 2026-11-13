@@ -2,6 +2,10 @@
 
 Date: 2026-11-13. Status: ready for implementation; scope is a proposed baseline.
 
+## Expanded roadmap
+
+See [FEATURE_COVERAGE.md](FEATURE_COVERAGE.md) for broader feature coverage, permissions, limitations and phased TDD gates. The exclusions below apply to v1 only, not the overall integration roadmap. Full application parity is not assumed.
+
 ## Goal and boundaries
 
 Build a discoverable, repository-owned OpenClaw skill for ordinary Amazing Marvin task management. Deliver concise results without adding planning overhead. Initial deliverable requested is this plan and Git repository, not installation or live account changes.

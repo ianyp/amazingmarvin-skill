@@ -20,3 +20,5 @@ Planned suite, not yet implemented. For every row: write test → run and confir
 Contract fixtures must be derived from current official OpenAPI/docs and labelled with source and retrieval date; use local fake-server integration to verify actual HTTP serialization, not only mock implementation internals. Validate uncertainty handling with a fake server that accepts a write and then drops the response.
 
 Live tests are excluded by default, separately marked, and require explicit environment opt-in. No real task data in snapshots. Record command, expected failure, observed failure, passing command and outcome for each slice in commit/PR notes. Coverage numbers alone are not acceptance.
+
+Expanded phases and feature-specific test obligations are in [FEATURE_COVERAGE.md](FEATURE_COVERAGE.md). These extend rather than replace the v1 matrix.

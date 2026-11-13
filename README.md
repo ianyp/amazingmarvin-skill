@@ -2,7 +2,7 @@
 
 Planning-stage repository. No skill is installed and no Marvin account has been accessed.
 
-See [implementation plan](IMPLEMENTATION_PLAN.md), [TDD acceptance matrix](TEST_PLAN.md), and [research](RESEARCH.md).
+See [full feature coverage and roadmap](FEATURE_COVERAGE.md), [implementation plan](IMPLEMENTATION_PLAN.md), [TDD acceptance matrix](TEST_PLAN.md), and [research](RESEARCH.md).
 
 ## Proposed v1
 
