@@ -1,6 +1,6 @@
 # Amazing Marvin OpenClaw skill
 
-Planning-stage repository. No skill is installed and no Marvin account has been accessed.
+Early implementation: 13 offline tests pass; see [development status](DEVELOPMENT.md). No skill is installed and no Marvin account has been accessed.
 
 See [full feature coverage and roadmap](FEATURE_COVERAGE.md), [implementation plan](IMPLEMENTATION_PLAN.md), [TDD acceptance matrix](TEST_PLAN.md), and [research](RESEARCH.md).
 
@@ -10,6 +10,6 @@ On-demand task capture, scheduled/due lists, category and label lookup, and task
 
 ## Development contract
 
-Use red → green → refactor for each behaviour. Write and run a failing test before implementation; record the failure and subsequent passing result in the implementation commit/PR. Tests run offline by default. Planning documents are not executable features and no passing test suite is claimed yet.
+Use red → green → refactor for each behaviour. Write and run a failing test before implementation; record the failure and subsequent passing result in the implementation commit/PR. Tests run offline by default. The initial offline core is tested; production transport and skill packaging remain unfinished.
 
 Repository is local-only until a remote destination is specified.
