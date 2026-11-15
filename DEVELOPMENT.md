@@ -54,3 +54,5 @@ Plan adjustments: unittest instead of pytest; fail-fast read errors rather than 
 ## Protected proxy adaptation (2026-11-15)
 
 Five new proxy tests initially failed (four assertions, one missing-handler error). After implementation all 54 tests pass. Coverage includes required proxy/CA, rejecting remote proxy, ignoring NO_PROXY bypass, and rejecting test origins for protected tokens. TLS verification, redirects, rate accounting and write replay policy remain unchanged.
+
+Live authentication response correction: plain-text OK regression initially failed; after the endpoint-specific fix all 56 tests pass. POST /test no longer marks transport failures as uncertain writes because it is non-mutating. Live check-auth succeeded through Gateway protected egress.

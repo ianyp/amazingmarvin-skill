@@ -60,3 +60,12 @@ class TransportTests(unittest.TestCase):
     def test_absolute_path_rejected(self):
         with self.assertRaises(MarvinError): self.transport('GET', 'https://example.org', {}, None)
         self.assertEqual(self.server.calls, [])
+
+    def test_auth_accepts_plain_ok(self):
+        self.server.reply = (200, {}, b'OK')
+        self.assertEqual(self.transport('POST', 'test', {'X-API-Token': 'fake'}, None), 'OK')
+
+    def test_other_endpoint_rejects_plain_ok(self):
+        self.server.reply = (200, {}, b'OK')
+        with self.assertRaises(MarvinError):
+            self.transport('GET', 'todayItems', {}, None)

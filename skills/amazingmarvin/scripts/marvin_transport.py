@@ -77,12 +77,14 @@ class Transport:
             request_headers['Content-Type'] = 'application/json'
         request = urllib.request.Request(self.base + path, data=data, headers=request_headers, method=method)
         self.reserve()
-        write = method == 'POST'
+        write = method == 'POST' and path != 'test'
         try:
             with self.opener.open(request, timeout=self.timeout) as response:
                 raw = response.read(2_000_001)
                 if len(raw) > 2_000_000:
                     raise MarvinError('Response exceeds size limit', code='response_too_large', outcome_unknown=write)
+                if method == 'POST' and path == 'test' and raw == b'OK':
+                    return 'OK'
                 try:
                     return json.loads(raw, parse_constant=reject_constant)
                 except (ValueError, UnicodeError):
