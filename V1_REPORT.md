@@ -33,4 +33,4 @@ The current turn’s skills_read snapshot predates installation and cannot load 
 
 Only v1 daily task workflows are delivered. Rich editing, habits, timers, reminders and other roadmap phases remain unimplemented. API lists need not match client UI visibility. No polling, jobs, agents, model/account/fallback routing or background inference configuration was added or changed. Standard runtime dependency: Python 3.11+ on Linux. Token remains limited-access.
 
-Package: `dist/amazingmarvin-skill-offline.zip` (historical filename; contains the live-verified source). Offline CI never uses account credentials. GitHub CI and publication outcome are recorded below.
+Package: `dist/amazingmarvin-skill-offline.zip` (historical filename; contains the live-verified source). Offline CI never uses account credentials. GitHub CI passed on Python 3.11, 3.12, 3.13 and 3.14 for release candidate d70f2ea: https://github.com/ianyp/amazingmarvin-skill/actions/runs/43770355741. Final release/tag: https://github.com/ianyp/amazingmarvin-skill/releases/tag/v0.1.0.
