@@ -11,3 +11,18 @@ Rate-accounting timestamps live at `$XDG_STATE_HOME/openclaw-amazingmarvin/rate.
 Local rolling 24-hour ceiling: 1440 requests, spacing: three seconds. This cannot see other apps' shared Marvin API usage. HTTP 429 sets a shared cooldown of at least 60 seconds; integer and HTTP-date Retry-After values are respected. No automatic HTTP retries are currently implemented. Reissue reads deliberately after cooldown; never blindly repeat uncertain writes.
 
 Install only after offline validation and authorized live verification. Copy the entire amazingmarvin directory to an approved OpenClaw skill directory; retain this repository as the source. This repository has not installed or enabled the skill.
+
+## OpenClaw protected Secrets store
+
+Store `MARVIN_API_TOKEN` as a protected secret with allowed host
+`serv.amazingmarvin.com`. Enable `secrets.egressProxy.enabled` on the Gateway
+and apply any required Gateway restart. Run the helper through OpenClaw
+`gateway_exec`, not Codex-native shell, sandbox or remote node execution.
+Newly saved secrets may require a new agent turn to refresh the run snapshot.
+
+The helper detects OpenClaw's opaque sentinel and requires the injected
+`HTTPS_PROXY` (authenticated loopback endpoint) and `SSL_CERT_FILE` trust bundle.
+It verifies TLS and forces that proxy even if `NO_PROXY` is set. Missing or
+invalid proxy configuration fails closed; there is no direct retry. Ordinary
+non-sentinel environment tokens retain the original direct-HTTPS behaviour.
+Never print the token, proxy URL, or complete environment.

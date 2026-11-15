@@ -2,7 +2,7 @@
 
 Source: https://help.amazingmarvin.com/amazing-marvin/api-endpoints (reviewed 2026-11-13).
 
-Base URL: https://serv.amazingmarvin.com/api/ . Requests use X-API-Token. Redirects and alternate origins are rejected. No system HTTP proxy is used. Responses are bounded to 2 MB. Errors omit server response bodies to avoid leaking credentials or task data.
+Base URL: https://serv.amazingmarvin.com/api/ . Requests use X-API-Token. Redirects and alternate origins are rejected. Ordinary tokens do not use system proxies. OpenClaw protected sentinels require the Gateway-injected authenticated loopback HTTPS proxy and CA bundle; bypass and direct fallback are disabled. Responses are bounded to 2 MB. Errors omit server response bodies to avoid leaking credentials or task data.
 
 | Command | Endpoint |
 | --- | --- |

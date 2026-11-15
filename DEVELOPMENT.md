@@ -50,3 +50,7 @@ No third-party Python package is required. Tests use synthetic data and loopback
 5. Phases 2–3/research features in FEATURE_COVERAGE.md remain backlog.
 
 Plan adjustments: unittest instead of pytest; fail-fast read errors rather than automatic retries; oversized responses fail clearly rather than silently truncate; documented Linux scope. Current limited API path cannot guarantee comprehensive task search or client-visible Today parity. Reuse review and rationale are recorded in REUSE_DECISION.md.
+
+## Protected proxy adaptation (2026-11-15)
+
+Five new proxy tests initially failed (four assertions, one missing-handler error). After implementation all 54 tests pass. Coverage includes required proxy/CA, rejecting remote proxy, ignoring NO_PROXY bypass, and rejecting test origins for protected tokens. TLS verification, redirects, rate accounting and write replay policy remain unchanged.

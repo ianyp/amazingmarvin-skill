@@ -1,5 +1,8 @@
 """Bounded public API transport; no automatic replay of writes."""
 import json
+import os
+import ssl
+import base64
 import time
 from email.utils import parsedate_to_datetime
 import urllib.error
@@ -19,6 +22,39 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+class ProtectedProxy(urllib.request.ProxyHandler):
+    """Mandatory HTTPS tunnel; NO_PROXY must not bypass protected egress."""
+    def proxy_open(self, request, proxy, scheme):
+        parsed = urllib.parse.urlsplit(proxy)
+        credentials = (urllib.parse.unquote(parsed.username) + ':' +
+                       urllib.parse.unquote(parsed.password)).encode()
+        request.add_header('Proxy-authorization', 'Basic ' +
+                           base64.b64encode(credentials).decode('ascii'))
+        request.set_proxy(parsed.hostname + ':' + str(parsed.port), 'http')
+        return None
+
+
+def make_opener(base_url):
+    token = os.environ.get('MARVIN_API_TOKEN', '')
+    if not token.startswith('oc-sent-'):
+        return urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    try:
+        proxy = os.environ.get('HTTPS_PROXY', '')
+        parsed = urllib.parse.urlsplit(proxy)
+        ca = os.environ.get('SSL_CERT_FILE', '')
+        if (base_url != PUBLIC_BASE or parsed.scheme != 'http' or
+                parsed.hostname != '127.0.0.1' or not parsed.port or
+                parsed.username != 'openclaw' or not parsed.password or
+                parsed.path not in ('', '/') or parsed.query or parsed.fragment or not ca):
+            raise ValueError()
+        context = ssl.create_default_context(cafile=ca)
+        return urllib.request.build_opener(ProtectedProxy({'https': proxy}),
+            urllib.request.HTTPSHandler(context=context), NoRedirect())
+    except (ValueError, OSError):
+        raise MarvinError('Protected token requires Gateway HTTPS proxy and trusted CA',
+                          code='protected_proxy_unavailable') from None
+
+
 class Transport:
     def __init__(self, *, reserve, defer=lambda seconds: None, clock=time.time, base_url=PUBLIC_BASE, allow_loopback=False, timeout=20):
         parsed = urllib.parse.urlsplit(base_url)
@@ -30,7 +66,7 @@ class Transport:
         self.defer = defer
         self.clock = clock
         self.timeout = timeout
-        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        self.opener = make_opener(base_url)
 
     def __call__(self, method, path, headers, body):
         if method not in ('GET', 'POST') or not path or path.startswith('/') or ':' in path or '..' in path or '#' in path:
