@@ -1,6 +1,6 @@
 # TDD acceptance matrix
 
-Acceptance requirements; consult DEVELOPMENT.md for implemented checks, observed results and remaining runtime/live gates. For every row: write test → run and confirm expected behavioural failure → smallest implementation → rerun → refactor. Use synthetic fixtures. No network or credentials in default tests. Pin pytest in development setup; run `python -m pytest` once scaffold exists.
+Acceptance requirements; consult DEVELOPMENT.md for implemented checks, observed results and remaining runtime/live gates. For every row: write test → run and confirm expected behavioural failure → smallest implementation → rerun → refactor. Use synthetic fixtures. No network or credentials in default tests. Implementation uses standard-library unittest; run `python -m unittest discover -s tests -v` (documented plan adjustment).
 
 | Slice | Required failing tests / acceptance |
 | --- | --- |

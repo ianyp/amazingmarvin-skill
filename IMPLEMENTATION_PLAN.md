@@ -1,6 +1,6 @@
 # Implementation plan
 
-Date: 2026-11-13. Status: core offline implementation complete; live/runtime verification pending. See DEVELOPMENT.md for actual results and documented plan adjustments.
+Date: 2026-11-13. Status: v1 implementation and live verification complete (2026-11-15); see V1_REPORT.md for release evidence. See DEVELOPMENT.md for actual results and documented plan adjustments.
 
 ## Expanded roadmap
 

@@ -10,7 +10,7 @@ Rate-accounting timestamps live at `$XDG_STATE_HOME/openclaw-amazingmarvin/rate.
 
 Local rolling 24-hour ceiling: 1440 requests, spacing: three seconds. This cannot see other apps' shared Marvin API usage. HTTP 429 sets a shared cooldown of at least 60 seconds; integer and HTTP-date Retry-After values are respected. No automatic HTTP retries are currently implemented. Reissue reads deliberately after cooldown; never blindly repeat uncertain writes.
 
-Install only after offline validation and authorized live verification. Copy the entire amazingmarvin directory to an approved OpenClaw skill directory; retain this repository as the source. This repository has not installed or enabled the skill.
+Install only after offline validation and authorized live verification. Copy the entire amazingmarvin directory to an approved OpenClaw skill directory; retain this repository as the source. The maintained source is this repository; the installed workspace copy must match the released source. See V1_REPORT.md in the repository for deployment evidence.
 
 ## OpenClaw protected Secrets store
 

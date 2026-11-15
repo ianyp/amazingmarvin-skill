@@ -1,3 +1,5 @@
+> Historical record: earlier pending/blocked statuses below are superseded by [V1_REPORT.md](V1_REPORT.md).
+
 # Implementation status — 2026-11-13
 
 **Core/v1 offline build complete; live verification blocked on credentials.** Broader feature phases remain planned, not implemented. No skill installed, no remote repository created, no real Marvin request or account mutation performed.

@@ -1,3 +1,5 @@
+> Historical record: earlier pending/blocked statuses below are superseded by [V1_REPORT.md](V1_REPORT.md).
+
 # Amazing Marvin skill — delivery report
 
 13 November 2026

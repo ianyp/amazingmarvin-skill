@@ -1,3 +1,5 @@
+> Historical record: earlier pending/blocked statuses below are superseded by [V1_REPORT.md](V1_REPORT.md).
+
 # Protected proxy adaptation — 15 November 2026
 
 Implemented OpenClaw protected-sentinel routing through its authenticated loopback HTTPS proxy. The helper loads the injected CA bundle, keeps TLS verification and redirect blocking, ignores NO_PROXY for protected requests, and refuses missing/invalid proxy configuration without direct fallback. Ordinary token behaviour is unchanged.

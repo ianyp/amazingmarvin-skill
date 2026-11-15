@@ -1,6 +1,6 @@
 # Amazing Marvin OpenClaw skill
 
-**Core offline build ready; not live-verified or installed.** 49 tests pass locally. No real account accessed.
+**V1 implemented, live-verified and installed in the OpenClaw workspace.** 56 offline tests pass. Protected-secret reads and synthetic task creation/completion verified. See [V1 report](V1_REPORT.md).
 
 ## Implemented
 
@@ -27,4 +27,4 @@ Output: `dist/amazingmarvin-skill-offline.zip`. Live commands require MARVIN_API
 - [Acceptance matrix](TEST_PLAN.md)
 - [Research](RESEARCH.md) and [reuse decision](REUSE_DECISION.md)
 
-The broader roadmap is not implemented. Live API tests, actual agent invocation and installation remain pending; no release tag or remote repository exists.
+The broader roadmap is not implemented. Source: https://github.com/ianyp/amazingmarvin-skill (private). Release: v0.1.0. The current conversation skill snapshot predates installation; CLI discovery and installed-helper execution are verified.
