@@ -77,14 +77,19 @@ class Transport:
             request_headers['Content-Type'] = 'application/json'
         request = urllib.request.Request(self.base + path, data=data, headers=request_headers, method=method)
         self.reserve()
-        write = method == 'POST' and path != 'test'
+        write = method == 'POST' and path not in ('test', 'tracks', 'downloadAttachment')
         try:
             with self.opener.open(request, timeout=self.timeout) as response:
                 raw = response.read(2_000_001)
+                if method == 'GET' and path == 'trackedItem' and response.status == 204 and raw == b'':
+                    return None
                 if len(raw) > 2_000_000:
                     raise MarvinError('Response exceeds size limit', code='response_too_large', outcome_unknown=write)
-                if method == 'POST' and path == 'test' and raw == b'OK':
+                if method == 'POST' and path in ('test', 'reminder/set', 'reminder/delete') and raw == b'OK':
                     return 'OK'
+                if path == 'downloadAttachment':
+                    try: return raw.decode('utf-8').strip()
+                    except UnicodeError: raise MarvinError('Invalid download response', code='invalid_response') from None
                 try:
                     return json.loads(raw, parse_constant=reject_constant)
                 except (ValueError, UnicodeError):

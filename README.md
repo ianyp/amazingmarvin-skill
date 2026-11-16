@@ -1,10 +1,12 @@
 # Amazing Marvin OpenClaw skill
 
-**V1 implemented, live-verified and installed in the OpenClaw workspace.** 56 offline tests pass. Protected-secret reads and synthetic task creation/completion verified. See [V1 report](V1_REPORT.md).
+**Phase 2 and supported phase-3 workflows implemented; checklist subtask creation live-verified.** Task-linked reminders and project completion/reopening remain explicitly gated. See [delivery and limitations](V2_V3_REPORT.md) and the [current coverage matrix](FEATURE_COVERAGE.md).
 
 ## Implemented
 
-Today/due lists, category/label lookup, immediate project children, task capture, known-ID task completion and credential check. JSON CLI, limited-token authentication, rate accounting and uncertain-write protection.
+Tasks/projects, checklist append, whitelisted edits and planning fields; broader date-aware reads; habit catalog/history/record/undo; timer start/stop and cache reconciliation; manual reminders; events; read-only notebooks/pages; bounded attachment downloads; typed reward actions. Protected full/limited token authentication, shared rate accounting, JSON errors and partial-success recovery. No arbitrary document mutation CLI.
+
+Implementation is not the same as live verification: habits/rewards/attachments/nonempty notebooks are offline-tested, with live fixture gaps clearly recorded. No full Marvin UI parity claim.
 
 ## Verify and package
 
@@ -27,4 +29,4 @@ Output: `dist/amazingmarvin-skill-offline.zip`. Live commands require MARVIN_API
 - [Acceptance matrix](TEST_PLAN.md)
 - [Research](RESEARCH.md) and [reuse decision](REUSE_DECISION.md)
 
-The broader roadmap is not implemented. Source: https://github.com/ianyp/amazingmarvin-skill (private). Release: v0.1.0. The current conversation skill snapshot predates installation; CLI discovery and installed-helper execution are verified.
+Source: https://github.com/ianyp/amazingmarvin-skill (private). V1 release evidence remains in V1_REPORT.md; current delivery evidence is in V2_V3_REPORT.md.

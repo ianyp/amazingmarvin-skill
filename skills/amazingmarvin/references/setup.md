@@ -2,9 +2,9 @@
 
 Requires Linux, Python 3.11+ and system timezone data. Helpers use only the standard library. No package install, external service, background process or scheduler is needed.
 
-Provide the limited-access API token as MARVIN_API_TOKEN in the helper process environment using the host's approved secret-injection mechanism. Do not place the token in shell command arguments, skill source or Git. Exact OpenClaw secret configuration is version-dependent and is not automated by this skill. No full-access token is used.
+Provide the limited-access or full-access API token as MARVIN_API_TOKEN in the helper process environment using the host's approved secret-injection mechanism. Do not place the token in shell command arguments, skill source or Git. Exact OpenClaw secret configuration is version-dependent and is not automated by this skill. Pass `--full-access` before the command when the stored token is full-access; default uses the limited-token header. Never infer token permissions from its text. This workspace now stores a full-access token under MARVIN_API_TOKEN.
 
-Run `python3 scripts/marvin.py --help` from this skill directory (or use its absolute path from another directory). A non-mutating credential check is `python3 scripts/marvin.py check-auth` (this still makes a network request). A normal read example is `python3 scripts/marvin.py today`. It contacts the public Marvin API, so don't use it as an offline setup check.
+Run `python3 scripts/marvin.py --help` from this skill directory (or use its absolute path from another directory). A non-mutating credential check is `python3 scripts/marvin.py --full-access check-auth` (this still makes a network request). A normal read example is `python3 scripts/marvin.py --full-access today`. It contacts the public Marvin API, so don't use it as an offline setup check.
 
 Rate-accounting timestamps live at `$XDG_STATE_HOME/openclaw-amazingmarvin/rate.json`, default `~/.local/state/openclaw-amazingmarvin/rate.json`. It contains no token or task data. Shared processes use a nonblocking file lock. Requests wait up to five seconds for spacing; cooldowns/budget exhaustion return errors rather than sleeping indefinitely. Do not delete the file to bypass throttling. Corrupt state fails closed.
 

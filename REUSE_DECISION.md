@@ -9,3 +9,7 @@ Reviewed LucaDeLeo/amazing-marvin-mcp src/amazing_marvin_mcp/server.py on main: 
 Sources: https://github.com/amazingmarvin/marvin-cli ; https://github.com/LucaDeLeo/amazing-marvin-mcp . This was targeted suitability review, not a comprehensive security audit. Source branches can change; evidence and review date recorded rather than implying pinned reuse.
 
 Plan adjustment: standard-library unittest instead of pytest; fail-fast read errors instead of automatic retry for this initial release. Integer and HTTP-date Retry-After are handled. Do not call v1 complete until remaining gates in DEVELOPMENT.md pass.
+
+## Phase 2/3 extension — 2026-11-16
+
+This is the explicitly requested extension of the existing repository adapter, not a new integration platform. Reused its protected transport, rate limiter, validation and JSON CLI instead of adding a hosted MCP service or dependencies. Rechecked current official help endpoint/data-type pages and the upstream OpenAPI file; help contains newer routes and several corrections absent from OpenAPI. No account data or token was sent to an additional service. No new daemon, plugin, agent, model route or scheduled background inference was added.

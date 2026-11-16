@@ -69,3 +69,10 @@ class TransportTests(unittest.TestCase):
         self.server.reply = (200, {}, b'OK')
         with self.assertRaises(MarvinError):
             self.transport('GET', 'todayItems', {}, None)
+
+    def test_empty_timer_204(self):
+        self.server.reply=(204,{},b'')
+        self.assertIsNone(self.transport('GET','trackedItem',{},None))
+    def test_empty_204_not_generic_success(self):
+        self.server.reply=(204,{},b'')
+        with self.assertRaises(MarvinError):self.transport('POST','doc/update',{}, {})

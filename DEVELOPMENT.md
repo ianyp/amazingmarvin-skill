@@ -1,3 +1,5 @@
+> Current status: phases 2/3 extension is described in [V2_V3_REPORT.md](V2_V3_REPORT.md), including unresolved gates. Historical V1 entries below are retained as evidence, not current backlog.
+
 > Historical record: earlier pending/blocked statuses below are superseded by [V1_REPORT.md](V1_REPORT.md).
 
 # Implementation status — 2026-11-13
