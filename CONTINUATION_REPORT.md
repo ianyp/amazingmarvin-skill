@@ -1,3 +1,5 @@
+> Reminder status superseded by [M reminder report](M_REMINDERS_REPORT.md): current task-linked M workflow replaces the unsuccessful legacy T adapter. Historical results below remain evidence about T only.
+
 # Continuation verification — 2026-11-16
 
 ## Completed

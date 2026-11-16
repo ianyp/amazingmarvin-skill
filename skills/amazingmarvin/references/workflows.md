@@ -58,9 +58,33 @@ On partial_success, read `tracked` and `tracks` for exact IDs. Use `reconcile-tr
 
 `time` is unix seconds per the data-type documentation; live server-list readback preserves this value. Actual firing/delivery timing has not been verified (the endpoint example contradicts the type docs). `reminder-delete --id ID` requires a unique existing manual reminder. Deletion is scoped to that reminder, not all reminders.
 
-**Task-linked reminder branch is gated, not shipped as working.** The staged adapter received an API receipt and successfully wrote task metadata, but live server-list readback contained no corresponding T reminder. Cause is not established. `task-reminder-set` and `task-reminder-delete` return unsupported_capability before network access in production. Offline tests exercise the staged dual-write/recovery design only, not app parity.
+### Task-linked M reminders (full token)
 
-`reminder-reconcile --id TASK_ID` or `--deleted` remains available for repairing known partial metadata states from server truth. It never resends a server action. Do not use it to manufacture a working reminder. The synthetic test's stale metadata was cleared.
+The current app creates type `M` with a separate `taskId`; the task stores
+`reminders: [{"reminderId":"...","time":1794937800}]`. Type M does **not** mean
+standalone. Legacy type T is a different task-time workflow and remains unsupported.
+
+- Set/update: `task-reminder-set --id TASK_ID --reminder-id UNIQUE_STABLE_ID --at 2026-11-18T18:00:00+00:00 [--snooze 5] [--auto-snooze]`
+- Delete one: `task-reminder-delete --id TASK_ID --reminder-id REMINDER_ID`
+- Repair metadata after an uncertain write: `reminder-reconcile --id TASK_ID --reminder-id REMINDER_ID`; append `--deleted` only when deletion was intended and the server entry is absent.
+
+Choose a new random/stable reminder ID distinct from the task ID for creation;
+reuse the exact known reminder ID only for an intended update. Multiple reminders
+per task are supported. The absolute timezone-aware `--at` is the notification
+instant; offset is fixed at zero. It does not change or require the task's scheduled
+day. Due-date/project/repeating reminders and type T remain unsupported.
+
+Set/delete verify server state before merging just the selected reminder into the
+latest task metadata, preserving unrelated entries. The task metadata is read back.
+Full access is required before any network call. ID collisions with another task
+or reminder type are rejected. Generic standalone deletion refuses linked M entries.
+
+`partial_success` means inspect server state using `reminders`, then reconcile
+with the exact two IDs; never blindly repeat an uncertain creation or deletion.
+Reconciliation only changes task metadata, not the server reminder. Observed
+revision conflicts are rejected, but the API offers no atomic compare-and-swap;
+avoid simultaneous reminder edits in the app while this operation runs.
+Successful readback proves storage, not client rendering or actual phone delivery.
 
 ## Attachment download (local file persistence)
 

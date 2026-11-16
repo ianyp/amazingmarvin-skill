@@ -1,12 +1,12 @@
 # Amazing Marvin OpenClaw skill
 
-**Phase 2 and supported phase-3 workflows implemented; checklist subtask creation live-verified.** Task-linked reminders and project completion/reopening remain explicitly gated. See [delivery and limitations](V2_V3_REPORT.md) and the [current coverage matrix](FEATURE_COVERAGE.md).
+**Phase 2 and supported phase-3 workflows implemented; checklist subtask creation live-verified.** Task-linked type M reminders are supported with server/task metadata readback. Legacy type T and project completion/reopening remain unsupported. See [delivery and limitations](V2_V3_REPORT.md) and the [current coverage matrix](FEATURE_COVERAGE.md).
 
 Latest continuation: [verification and concrete blockers](CONTINUATION_REPORT.md).
 
 ## Implemented
 
-Tasks/projects, checklist append, whitelisted edits and planning fields; broader date-aware reads; habit catalog/history/record/undo; timer start/stop and cache reconciliation; manual reminders; events; read-only notebooks/pages; bounded attachment downloads; typed reward actions. Protected full/limited token authentication, shared rate accounting, JSON errors and partial-success recovery. No arbitrary document mutation CLI.
+Tasks/projects, checklist append, whitelisted edits and planning fields; broader date-aware reads; habit catalog/history/record/undo; timer start/stop and cache reconciliation; standalone and task-linked M reminders; events; read-only notebooks/pages; bounded attachment downloads; typed reward actions. Protected full/limited token authentication, shared rate accounting, JSON errors and partial-success recovery. No arbitrary document mutation CLI.
 
 Implementation is not the same as live verification: habits/rewards/attachments/nonempty notebooks are offline-tested, with live fixture gaps clearly recorded. No full Marvin UI parity claim.
 

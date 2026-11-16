@@ -20,7 +20,7 @@ description: >-
 - Completion: `done` is for tasks only and may trigger reward/repeat effects. Projects and reopening remain unsupported, not emulated by raw document updates.
 - Habits/rewards: record/undo a known habit or explicitly requested reward action. Never reset history. These mutate real account state; do not test on existing user habits or reward balances.
 - Timers: start/stop plus stopped-task cache update; reconcile only with the dedicated command after partial success. Starting a timer may stop another active timer. Inspect `tracked` first and do not interrupt another timer during synthetic testing.
-- Reminders: standalone manual reminders only. Task-linked reminders are research-gated after a failed live server-list readback; do not invoke them as working functionality. Due-date/project reminders and bulk deletion are unsupported. Notification delivery is unverified unless the user confirms it.
+- Reminders: standalone M reminders and task-linked M reminders are separate workflows. Linked reminders require full access, explicit task/reminder IDs, server readback and task `reminders` metadata synchronization. Type M alone does not mean standalone. Legacy task-time T reminders remain unsupported. Due-date/project reminders and bulk deletion are unsupported. Notification delivery is unverified unless the user confirms it.
 - Downloads: explicit item ID, attachment UID and output path; maximum 20 MB, no overwrite, no API token sent to file host. Never expose the temporary bearer URL. Currently only documented Backblaze HTTPS hosts are accepted.
 
 ## Unsupported boundaries

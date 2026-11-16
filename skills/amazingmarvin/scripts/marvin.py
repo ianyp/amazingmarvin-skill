@@ -55,9 +55,9 @@ def main(argv=None):
         sub=subs.add_parser('notebook');group=sub.add_mutually_exclusive_group(required=True);group.add_argument('--id');group.add_argument('--parent-id')
         sub=subs.add_parser('reward');sub.add_argument('--action',required=True,choices=['claim','unclaim','spend']);sub.add_argument('--date');sub.add_argument('--id');sub.add_argument('--points',type=float)
         sub=subs.add_parser('download');sub.add_argument('--id',required=True);sub.add_argument('--uid',required=True);sub.add_argument('--output',required=True)
-        sub=subs.add_parser('task-reminder-set');sub.add_argument('--id',required=True);sub.add_argument('--at',required=True);sub.add_argument('--offset',type=int,default=0)
-        subs.add_parser('task-reminder-delete').add_argument('--id',required=True)
-        sub=subs.add_parser('reminder-reconcile');sub.add_argument('--id',required=True);sub.add_argument('--deleted',action='store_true')
+        sub=subs.add_parser('task-reminder-set');sub.add_argument('--id',required=True);sub.add_argument('--at',required=True);sub.add_argument('--reminder-id',required=True);sub.add_argument('--snooze',type=int,default=5);sub.add_argument('--auto-snooze',action='store_true')
+        sub=subs.add_parser('task-reminder-delete');sub.add_argument('--id',required=True);sub.add_argument('--reminder-id',required=True)
+        sub=subs.add_parser('reminder-reconcile');sub.add_argument('--id',required=True);sub.add_argument('--deleted',action='store_true');sub.add_argument('--reminder-id',required=True)
         args = parser.parse_args(argv)
         operation = args.command
         now = datetime.now(ZoneInfo(args.timezone))
@@ -93,9 +93,9 @@ def main(argv=None):
         elif operation=='notebook': data=client.notebook(item_id=args.id,parent_id=args.parent_id)
         elif operation=='reward': data=client.reward(args.action,args.date or now.date().isoformat(),item_id=args.id,points=args.points)
         elif operation=='reminder-delete': data=client.delete_reminder(args.id)
-        elif operation=='task-reminder-set': data=client.set_task_reminder(args.id,args.at,offset=args.offset)
-        elif operation=='task-reminder-delete': data=client.delete_task_reminder(args.id)
-        elif operation=='reminder-reconcile': data=client.reconcile_task_reminder(args.id,deleted=args.deleted,timezone=args.timezone)
+        elif operation=='task-reminder-set': data=client.set_task_reminder(args.id,args.at,reminder_id=args.reminder_id,snooze=args.snooze,auto_snooze=args.auto_snooze)
+        elif operation=='task-reminder-delete': data=client.delete_task_reminder(args.id,reminder_id=args.reminder_id)
+        elif operation=='reminder-reconcile': data=client.reconcile_task_reminder(args.id,reminder_id=args.reminder_id,deleted=args.deleted)
         elif operation=='download': data=client.download_attachment(args.id,args.uid,args.output)
         else:
             if args.input_json == '-':

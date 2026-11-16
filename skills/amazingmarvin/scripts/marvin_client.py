@@ -25,7 +25,6 @@ class Client:
         if not isinstance(full_access, bool):
             raise MarvinError("full_access must be boolean")
         self.full_access = full_access
-        self._task_reminders_verified = False
         if not isinstance(token, str) or not token.strip() or any(ord(c) < 32 or ord(c) == 127 for c in token):
             raise MarvinError('Configure MARVIN_API_TOKEN', code='missing_credentials')
         self._token = token
@@ -365,8 +364,8 @@ class Client:
         return self._update(item_id,{'times':times,'duration':duration})
 
     def set_reminder(self,fields):
-        # Manual reminders have no task metadata to synchronize. Task/due reminder
-        # workflows stay gated until their client scheduling contract is verified.
+        # This standalone workflow deliberately excludes taskId. Linked M reminders
+        # use the dedicated dual-write workflow below.
         allowed={'reminderId','time','title','type','offset','snooze','autoSnooze','canTrack'}
         if not isinstance(fields,dict) or set(fields)-allowed: raise MarvinError('Invalid reminder fields')
         body=dict(fields)
@@ -383,7 +382,7 @@ class Client:
     def delete_reminder(self,reminder_id):
         self._id(reminder_id)
         matches=[r for r in self.reminders() if r.get('reminderId')==reminder_id]
-        if len(matches)!=1 or matches[0].get('type')!='M':
+        if len(matches)!=1 or matches[0].get('type')!='M' or matches[0].get('taskId'):
             raise MarvinError('Choose one existing standalone manual reminder',code='ambiguous_target')
         return self._call('POST','reminder/delete',{'reminderIds':[reminder_id]})
 
@@ -401,62 +400,91 @@ class Client:
         url=self._call('POST','downloadAttachment',{'itemId':item_id,'uid':uid,'fileName':name},full=True,read_only=True)
         return download(url,output,size=size)
 
-    def _reminder_metadata(self,doc,at,offset,snooze,auto_snooze):
-        if at.utcoffset() is None: raise MarvinError('Reminder datetime requires timezone')
-        if doc.get('day')!=at.date().isoformat(): raise MarvinError('Schedule the task on the reminder event day first')
-        self._number(offset,integer=True);self._number(snooze,integer=True)
-        if not isinstance(auto_snooze,bool): raise MarvinError('autoSnooze must be boolean')
-        return {'taskTime':at.strftime('%H:%M'),'reminderOffset':offset,'reminderTime':str(int(at.timestamp())-offset*60),'snooze':snooze,'autoSnooze':auto_snooze}
+    def _linked_entries(self,doc):
+        entries=doc.get('reminders',[])
+        if not isinstance(entries,list) or any(not isinstance(r,dict) or not isinstance(r.get('reminderId'),str) for r in entries):
+            raise MarvinError('Invalid task reminder metadata',code='invalid_response')
+        ids=[r['reminderId'] for r in entries]
+        if len(ids)!=len(set(ids)): raise MarvinError('Duplicate task reminder IDs',code='invalid_response')
+        return entries
 
-    def _reminder_update(self,item_id,fields):
-        try: return self._update(item_id,fields)
-        except MarvinError as e:
-            raise MarvinError('Server reminder changed; task metadata needs reconciliation. Do not replay server change.',code='partial_success',outcome_unknown=e.outcome_unknown,details={'itemId':item_id,'serverReminderChanged':True,'recovery':'reminder-reconcile','cause':e.code}) from None
+    def _linked_server(self,item_id,reminder_id,*,required=False):
+        matches=[r for r in self.reminders() if r.get('reminderId')==reminder_id]
+        if len(matches)>1 or (matches and (matches[0].get('type')!='M' or matches[0].get('taskId')!=item_id)):
+            raise MarvinError('Reminder ID belongs to another workflow or task',code='conflict')
+        if required and not matches: raise MarvinError('Linked reminder not found',code='invalid_response')
+        return matches[0] if matches else None
 
-    def set_task_reminder(self,item_id,at,*,offset=0,snooze=0,auto_snooze=False):
-        if not self._task_reminders_verified:
-            raise MarvinError('Task-linked reminders failed live server-list readback; this workflow is research-gated',code='unsupported_capability')
+    def _sync_linked_metadata(self,item_id,reminder_id,row):
+        # Re-read immediately before merging; preserve every other reminder.
+        # The API offers no atomic compare-and-swap, so concurrent edits remain a limitation.
+        doc=self._item(item_id,task_only=True)
+        entries=self._linked_entries(doc)
+        updated=[r for r in entries if r['reminderId']!=reminder_id]
+        if row is not None:
+            timestamp=self._number(row.get('time'),integer=True,minimum=1)
+            if timestamp>=100_000_000_000: raise MarvinError('Unexpected reminder time unit')
+            updated.append({'reminderId':reminder_id,'time':timestamp})
+        if updated!=entries:
+            latest=self._item(item_id,task_only=True)
+            if latest.get('_rev')!=doc.get('_rev') or self._linked_entries(latest)!=entries:
+                raise MarvinError('Task changed during reminder merge',code='conflict')
+            self._update(item_id,{'reminders':updated})
+        actual=self._linked_entries(self._item(item_id,task_only=True))
+        if actual!=updated: raise MarvinError('Task reminder metadata readback mismatch',code='invalid_response')
+        return {'itemId':item_id,'reminderId':reminder_id,'metadataVerified':True,'notificationDelivered':'unverified'}
+
+    def _linked_partial(self,item_id,reminder_id,error):
+        return MarvinError('Reminder write attempted; inspect server state and reconcile metadata. Do not replay blindly.',
+                           code='partial_success',outcome_unknown=True,
+                           details={'itemId':item_id,'reminderId':reminder_id,
+                                    'recovery':'reminder-reconcile with both IDs; --deleted only for intended deletion',
+                                    'cause':error.code})
+
+    def set_task_reminder(self,item_id,at,*,reminder_id,snooze=5,auto_snooze=False):
+        self._require_full();self._id(item_id);self._id(reminder_id)
+        if reminder_id==item_id: raise MarvinError('Use a separate stable reminder ID, not the task ID')
         from datetime import datetime
         try: instant=datetime.fromisoformat(at)
         except (TypeError,ValueError): raise MarvinError('Invalid reminder datetime') from None
-        doc=self._item(item_id,task_only=True)
-        fields=self._reminder_metadata(doc,instant,offset,snooze,auto_snooze)
-        if int(instant.timestamp())<=0 or int(instant.timestamp())>=100_000_000_000: raise MarvinError('Invalid reminder time')
-        row={'reminderId':item_id,'time':int(instant.timestamp()),'type':'T','title':doc.get('title','')[:200],'offset':offset,'snooze':snooze,'autoSnooze':auto_snooze,'canTrack':False}
-        self._call('POST','reminder/set',{'reminders':[row]})
+        if instant.utcoffset() is None: raise MarvinError('Reminder datetime requires timezone')
+        timestamp=int(instant.timestamp())
+        if not 0<timestamp<100_000_000_000: raise MarvinError('Invalid reminder time')
+        self._number(snooze,integer=True,minimum=0)
+        if not isinstance(auto_snooze,bool): raise MarvinError('autoSnooze must be boolean')
+        doc=self._item(item_id,task_only=True);self._linked_entries(doc)
+        if doc.get('done') or doc.get('deletedAt'): raise MarvinError('Choose an active task')
+        title=doc.get('title')
+        if not isinstance(title,str) or not title.strip(): raise MarvinError('Task title required')
+        self._linked_server(item_id,reminder_id)
+        row={'reminderId':reminder_id,'taskId':item_id,'type':'M','time':timestamp,
+             'title':title[:200],'offset':0,'snooze':snooze,'autoSnooze':auto_snooze,'canTrack':False}
         try:
-            matches=[r for r in self.reminders() if r.get('reminderId')==item_id]
-            if len(matches)!=1 or any(matches[0].get(k)!=row[k] for k in ('type','time','offset')):
-                raise MarvinError('Server reminder readback did not match',code='invalid_response')
-        except MarvinError as error:
-            raise MarvinError('Reminder request accepted but retention is unverified; task metadata unchanged. Inspect server state before retrying.',
-                              code='partial_success',outcome_unknown=True,
-                              details={'itemId':item_id,'serverReceipt':True,'metadataUpdated':False,
-                                       'recovery':'Inspect reminders; reconcile only a matching server entry','cause':error.code}) from None
-        result=self._reminder_update(item_id,fields)
-        return {'itemId':item_id,'serverReceipt':True,'metadataReceipt':result,'notificationDelivered':'unverified'}
+            self._call('POST','reminder/set',{'reminders':[row]})
+            actual=self._linked_server(item_id,reminder_id,required=True)
+            if any(actual.get(k)!=v for k,v in row.items()):
+                raise MarvinError('Server reminder readback mismatch',code='invalid_response')
+            result=self._sync_linked_metadata(item_id,reminder_id,actual)
+        except MarvinError as error: raise self._linked_partial(item_id,reminder_id,error) from None
+        result['serverVerified']=True
+        return result
 
-    def delete_task_reminder(self,item_id):
-        if not self._task_reminders_verified:
-            raise MarvinError("Task-linked reminder workflow is research-gated",code="unsupported_capability")
-        self._item(item_id,task_only=True)
-        matches=[r for r in self.reminders() if r.get('reminderId')==item_id]
-        if len(matches)!=1 or matches[0].get('type')!='T': raise MarvinError('Choose one existing task-time reminder')
-        self._call('POST','reminder/delete',{'reminderIds':[item_id]})
-        return self._reminder_update(item_id,{'reminderTime':None,'reminderOffset':None,'snooze':None,'autoSnooze':None})
+    def delete_task_reminder(self,item_id,*,reminder_id):
+        self._require_full();self._id(item_id);self._id(reminder_id)
+        self._linked_entries(self._item(item_id,task_only=True))
+        self._linked_server(item_id,reminder_id,required=True)
+        try:
+            self._call('POST','reminder/delete',{'reminderIds':[reminder_id]})
+            if self._linked_server(item_id,reminder_id) is not None:
+                raise MarvinError('Server reminder still exists',code='invalid_response')
+            result=self._sync_linked_metadata(item_id,reminder_id,None)
+        except MarvinError as error: raise self._linked_partial(item_id,reminder_id,error) from None
+        result['serverVerified']=True
+        return result
 
-    def reconcile_task_reminder(self,item_id,*,deleted=False,timezone='Europe/London'):
-        from datetime import datetime
-        from zoneinfo import ZoneInfo
-        doc=self._item(item_id,task_only=True)
-        matches=[r for r in self.reminders() if r.get('reminderId')==item_id]
-        if deleted:
-            if matches: raise MarvinError('Server reminder still exists; cannot clear metadata')
-            fields={'reminderTime':None,'reminderOffset':None,'snooze':None,'autoSnooze':None}
-        else:
-            if len(matches)!=1 or matches[0].get('type')!='T': raise MarvinError('No unique server task reminder to reconcile')
-            row=matches[0];self._number(row.get('time'),integer=True,minimum=1)
-            if row['time']>=100_000_000_000: raise MarvinError('Unexpected reminder time unit')
-            at=datetime.fromtimestamp(row['time'],ZoneInfo(timezone))
-            fields=self._reminder_metadata(doc,at,row.get('offset',0),row.get('snooze',0),row.get('autoSnooze',False))
-        return self._update(item_id,fields)
+    def reconcile_task_reminder(self,item_id,*,reminder_id,deleted=False):
+        self._require_full();self._id(item_id);self._id(reminder_id)
+        self._linked_entries(self._item(item_id,task_only=True))
+        row=self._linked_server(item_id,reminder_id,required=not deleted)
+        if deleted and row is not None: raise MarvinError('Server reminder still exists; cannot clear metadata')
+        return self._sync_linked_metadata(item_id,reminder_id,row)
