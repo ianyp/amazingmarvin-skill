@@ -161,7 +161,7 @@ class Client:
 
     def _fields(self, fields, *, project=False, creating=False):
         allowed = {'title', 'day', 'dueDate', 'estimateMinutes', 'parentId', 'labelIds', 'note', 'plannedWeek', 'plannedMonth', 'dailySection', 'bonusSection', 'customSection', 'timeBlockSection', 'backburner'}
-        if creating and not project:
+        if not creating or not project:
             allowed.update({'startDate', 'endDate'})
         allowed.add('priority' if project else 'isStarred')
         if not isinstance(fields, dict) or not fields or set(fields)-allowed: raise MarvinError('Unsupported item fields')
@@ -171,6 +171,7 @@ class Client:
         for key in ('day','dueDate','plannedWeek','startDate','endDate'):
             if key in body:
                 value=body[key]
+                if value is None and not creating and key in ('startDate','endDate'): continue
                 if value is None and key=='dueDate' or key=='day' and (value is None and project or value=='unassigned' and not project): continue
                 valid_date(value)
                 if key=='plannedWeek' and date.fromisoformat(value).weekday()!=0: raise MarvinError('plannedWeek must be a Monday')
@@ -423,6 +424,15 @@ class Client:
         if int(instant.timestamp())<=0 or int(instant.timestamp())>=100_000_000_000: raise MarvinError('Invalid reminder time')
         row={'reminderId':item_id,'time':int(instant.timestamp()),'type':'T','title':doc.get('title','')[:200],'offset':offset,'snooze':snooze,'autoSnooze':auto_snooze,'canTrack':False}
         self._call('POST','reminder/set',{'reminders':[row]})
+        try:
+            matches=[r for r in self.reminders() if r.get('reminderId')==item_id]
+            if len(matches)!=1 or any(matches[0].get(k)!=row[k] for k in ('type','time','offset')):
+                raise MarvinError('Server reminder readback did not match',code='invalid_response')
+        except MarvinError as error:
+            raise MarvinError('Reminder request accepted but retention is unverified; task metadata unchanged. Inspect server state before retrying.',
+                              code='partial_success',outcome_unknown=True,
+                              details={'itemId':item_id,'serverReceipt':True,'metadataUpdated':False,
+                                       'recovery':'Inspect reminders; reconcile only a matching server entry','cause':error.code}) from None
         result=self._reminder_update(item_id,fields)
         return {'itemId':item_id,'serverReceipt':True,'metadataReceipt':result,'notificationDelivered':'unverified'}
 

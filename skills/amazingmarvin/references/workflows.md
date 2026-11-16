@@ -78,7 +78,6 @@ Example input:
 ```
 
 Both token modes support this creation route. Omit unused dates; null and
-natural-language strings are rejected. These fields are currently supported
-only for task creation, not project creation or edits. The API documents
-preserving them; app strategy visibility and live readback have not been
-verified. Today/due API results are not filtered to emulate the app.
+natural-language strings are rejected. These fields are supported for task creation and task/project edits, but not
+project creation. Edits also accept null to clear either date. Task creation and task/project date edit/clear
+have passed live readback; app strategy visibility is not emulated. Today/due API results are not filtered to emulate the app.

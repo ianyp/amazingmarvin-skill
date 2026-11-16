@@ -9,7 +9,9 @@ class TaskReminderTests(unittest.TestCase):
     def transport(self,m,p,h,b):
         self.calls.append((m,p,h,b))
         if p.startswith('doc?'):return {'_id':'t','db':'Tasks','day':'2026-11-17','title':'test'}
-        if p=='reminders':return [{'reminderId':'t','type':'T'}]
+        if p=='reminders':
+            writes=[a for a in self.calls if a[1]=='reminder/set']
+            return writes[-1][3]['reminders'] if writes else [{'reminderId':'t','type':'T'}]
         if p=='doc/update':
             if self.fail:raise MarvinError('failed',code='http_500',outcome_unknown=True)
             return {'_id':'t'}
@@ -43,3 +45,24 @@ class TaskReminderTests(unittest.TestCase):
         with self.assertRaises(MarvinError) as ctx:self.c.set_task_reminder('t','2026-11-17T10:00:00Z')
         self.assertEqual(ctx.exception.code,'unsupported_capability')
         self.assertEqual(self.calls,[])
+
+    def test_missing_server_readback_does_not_write_metadata(self):
+        original=self.transport
+        self.c._transport=lambda m,p,h,b: [] if p=='reminders' else original(m,p,h,b)
+        with self.assertRaises(MarvinError) as ctx:
+            self.c.set_task_reminder('t','2026-11-17T10:00:00Z')
+        self.assertEqual(ctx.exception.code,'partial_success')
+        self.assertFalse(any(a[1]=='doc/update' for a in self.calls))
+        self.assertEqual(len([a for a in self.calls if a[1]=='reminder/set']),1)
+
+    def test_readback_error_does_not_replay_server_write(self):
+        original=self.transport
+        def failing(m,p,h,b):
+            if p=='reminders': raise MarvinError('Read failed',code='http_500')
+            return original(m,p,h,b)
+        self.c._transport=failing
+        with self.assertRaises(MarvinError) as ctx:
+            self.c.set_task_reminder('t','2026-11-17T10:00:00Z')
+        self.assertEqual(ctx.exception.code,'partial_success')
+        self.assertFalse(any(a[1]=='doc/update' for a in self.calls))
+        self.assertEqual(len([a for a in self.calls if a[1]=='reminder/set']),1)

@@ -31,6 +31,9 @@ class DateBoundaries(unittest.TestCase):
         with self.assertRaises(MarvinError):
             self.client.project({'title': 'test', 'startDate': '2026-11-17'})
         self.assertEqual(self.calls, [])
-    def test_not_enabled_for_edit_without_schema_review(self):
-        with self.assertRaises(MarvinError):
-            self.client._fields({'startDate': '2026-11-17'})
+    def test_edits_accept_dates_and_explicit_clear(self):
+        for project in (False, True):
+            for key in ('startDate', 'endDate'):
+                for value in ('2026-11-17', None):
+                    with self.subTest(project=project,key=key,value=value):
+                        self.assertEqual(self.client._fields({key:value},project=project),{key:value})

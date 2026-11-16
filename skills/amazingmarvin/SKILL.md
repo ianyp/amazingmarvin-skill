@@ -15,7 +15,7 @@ description: >-
 ## Workflow branches
 
 - Browse: today/due/completed, categories/labels/children, goals/time blocks, account/kudos, habits, tracked time, notebooks/pages and reminders. No account persistence. Empty history is not an empty habit catalog; use `habits --raw` for full catalog.
-- Capture/edit: task/project/event creation and whitelisted task/project edits persist in Marvin. `edit` cannot set arbitrary document fields or completion state. Use exact IDs and typed fields, not title shortcuts. Task creation accepts startDate/endDate separately from day/dueDate; this does not emulate app visibility or enable those fields for projects/edits.
+- Capture/edit: task/project/event creation and whitelisted task/project edits persist in Marvin. `edit` cannot set arbitrary document fields or completion state. Use exact IDs and typed fields, not title shortcuts. Task creation accepts startDate/endDate separately from day/dueDate; task/project edits can set or clear them. This does not emulate app visibility or enable project-creation date fields.
 - Checklist subtasks: `subtasks-add` appends entries to an existing task, preserving existing entries. These are checklist entries, not independently scheduled child tasks. A project contains tasks via parentId; tasks contain checklists via subtasks.
 - Completion: `done` is for tasks only and may trigger reward/repeat effects. Projects and reopening remain unsupported, not emulated by raw document updates.
 - Habits/rewards: record/undo a known habit or explicitly requested reward action. Never reset history. These mutate real account state; do not test on existing user habits or reward balances.
