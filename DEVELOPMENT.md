@@ -60,3 +60,18 @@ Plan adjustments: unittest instead of pytest; fail-fast read errors rather than 
 Five new proxy tests initially failed (four assertions, one missing-handler error). After implementation all 54 tests pass. Coverage includes required proxy/CA, rejecting remote proxy, ignoring NO_PROXY bypass, and rejecting test origins for protected tokens. TLS verification, redirects, rate accounting and write replay policy remain unchanged.
 
 Live authentication response correction: plain-text OK regression initially failed; after the endpoint-specific fix all 56 tests pass. POST /test no longer marks transport failures as uncertain writes because it is non-mutating. Live check-auth succeeded through Gateway protected egress.
+
+## Continuation 2026-11-16: token modes and task date boundaries
+
+Explicit mutually exclusive minimal/full CLI flags; minimal remains default.
+Shared setup no longer assumes the author's credential type. Three new CLI
+tests cover headers, flag conflicts and full-only capability denial.
+
+Rechecked the official endpoint reference. It now explicitly documents
+startDate/endDate preservation on addTask. Five new boundary tests were added;
+valid date cases failed before implementation, then passed. The adapter now
+passes exact dates through independently of day/dueDate. No client visibility
+algorithm, project date support, or edit support is inferred from this route.
+No new live account mutations were performed in this continuation.
+Task-linked reminder and project completion gates remain closed: current
+endpoint docs do not resolve retention or client-side completion semantics.

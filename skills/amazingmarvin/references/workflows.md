@@ -65,3 +65,20 @@ On partial_success, read `tracked` and `tracks` for exact IDs. Use `reconcile-tr
 ## Attachment download (local file persistence)
 
 Read the exact task/project's attach_UID metadata. `download --id ITEM_ID --uid UID --output /absolute/new-file` verifies metadata, obtains a temporary URL privately and saves at most 20 MB with mode 0600. No overwriting, redirects or token forwarding. Requires subscription and full token. A new hosting domain is an explicit unsupported-host error, not a silent fallback.
+
+## Task start/end dates
+
+Task capture (`add --input-json FILE`) also accepts optional `startDate` and
+`endDate` as exact YYYY-MM-DD dates. These are independent of the scheduled
+`day` and deadline `dueDate`; do not substitute one for another.
+Example input:
+
+```json
+{"title":"Prepare notes","startDate":"2026-11-17","day":"2026-11-18","dueDate":"2026-11-19","endDate":"2026-11-20"}
+```
+
+Both token modes support this creation route. Omit unused dates; null and
+natural-language strings are rejected. These fields are currently supported
+only for task creation, not project creation or edits. The API documents
+preserving them; app strategy visibility and live readback have not been
+verified. Today/due API results are not filtered to emulate the app.

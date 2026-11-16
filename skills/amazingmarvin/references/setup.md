@@ -2,9 +2,16 @@
 
 Requires Linux, Python 3.11+ and system timezone data. Helpers use only the standard library. No package install, external service, background process or scheduler is needed.
 
-Provide the limited-access or full-access API token as MARVIN_API_TOKEN in the helper process environment using the host's approved secret-injection mechanism. Do not place the token in shell command arguments, skill source or Git. Exact OpenClaw secret configuration is version-dependent and is not automated by this skill. Pass `--full-access` before the command when the stored token is full-access; default uses the limited-token header. Never infer token permissions from its text. This workspace now stores a full-access token under MARVIN_API_TOKEN.
+Provide the limited-access or full-access API token as MARVIN_API_TOKEN in the helper process environment using the host's approved secret-injection mechanism. Do not place the token in shell command arguments, skill source or Git. Exact OpenClaw secret configuration is version-dependent and is not automated by this skill. Choose the matching access mode before the command. Never infer token permissions from its text.
 
-Run `python3 scripts/marvin.py --help` from this skill directory (or use its absolute path from another directory). A non-mutating credential check is `python3 scripts/marvin.py --full-access check-auth` (this still makes a network request). A normal read example is `python3 scripts/marvin.py --full-access today`. It contacts the public Marvin API, so don't use it as an offline setup check.
+| Token configuration | CLI option | Header |
+| --- | --- | --- |
+| Minimal (Marvin limited-access token) | `--minimal-access`, or omit both flags | `X-API-Token` |
+| Full-access token | `--full-access` | `X-Full-Access-Token` |
+
+The flags are mutually exclusive. Both modes use the same protected `MARVIN_API_TOKEN` environment variable. There is no automatic upgrade or fallback. Minimal access supports core workflows such as today, task capture and task completion; it is not read-only. Full-only operations fail locally with `missing_capability` in minimal mode. See the repository's FEATURE_COVERAGE.md for per-operation requirements.
+
+Run `python3 scripts/marvin.py --help` from this skill directory (or use its absolute path from another directory). A non-mutating credential check is `python3 scripts/marvin.py --minimal-access check-auth` (this still makes a network request). A normal read example is `python3 scripts/marvin.py --minimal-access today`. For a full token, replace `--minimal-access` with `--full-access` in those examples. It contacts the public Marvin API, so don't use it as an offline setup check.
 
 Rate-accounting timestamps live at `$XDG_STATE_HOME/openclaw-amazingmarvin/rate.json`, default `~/.local/state/openclaw-amazingmarvin/rate.json`. It contains no token or task data. Shared processes use a nonblocking file lock. Requests wait up to five seconds for spacing; cooldowns/budget exhaustion return errors rather than sleeping indefinitely. Do not delete the file to bypass throttling. Corrupt state fails closed.
 

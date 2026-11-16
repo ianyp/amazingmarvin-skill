@@ -161,12 +161,14 @@ class Client:
 
     def _fields(self, fields, *, project=False, creating=False):
         allowed = {'title', 'day', 'dueDate', 'estimateMinutes', 'parentId', 'labelIds', 'note', 'plannedWeek', 'plannedMonth', 'dailySection', 'bonusSection', 'customSection', 'timeBlockSection', 'backburner'}
+        if creating and not project:
+            allowed.update({'startDate', 'endDate'})
         allowed.add('priority' if project else 'isStarred')
         if not isinstance(fields, dict) or not fields or set(fields)-allowed: raise MarvinError('Unsupported item fields')
         body = dict(fields)
         if creating or 'title' in body:
             if not isinstance(body.get('title'), str) or not body['title'].strip(): raise MarvinError('Title is required')
-        for key in ('day','dueDate','plannedWeek'):
+        for key in ('day','dueDate','plannedWeek','startDate','endDate'):
             if key in body:
                 value=body[key]
                 if value is None and key=='dueDate' or key=='day' and (value is None and project or value=='unassigned' and not project): continue

@@ -14,3 +14,18 @@ class ExtendedCliTests(unittest.TestCase):
     def test_habits_cli_full(self):
         status,result,calls=self.run_workflow(['--full-access','habits','--raw'],[],datetime(2026,11,16,tzinfo=ZoneInfo('UTC')))
         self.assertEqual(status,0);self.assertEqual(calls[0][1],'habits?raw=1')
+    def test_minimal_and_default_headers(self):
+        for flags in ([], ['--minimal-access']):
+            status,result,calls=self.run_workflow(flags+['today'],[],datetime(2026,11,16,tzinfo=ZoneInfo('UTC')))
+            self.assertEqual(status,0)
+            self.assertIn('X-API-Token',calls[0][2])
+            self.assertNotIn('X-Full-Access-Token',calls[0][2])
+    def test_conflicting_access_flags_rejected(self):
+        status,result,calls=self.run_workflow(['--minimal-access','--full-access','today'],[],datetime(2026,11,16,tzinfo=ZoneInfo('UTC')))
+        self.assertNotEqual(status,0)
+        self.assertEqual(calls,[])
+    def test_minimal_rejects_full_operation_before_network(self):
+        status,result,calls=self.run_workflow(['--minimal-access','notebooks'],[],datetime(2026,11,16,tzinfo=ZoneInfo('UTC')),'{"title":"test"}')
+        self.assertNotEqual(status,0)
+        self.assertEqual(result['error']['code'],'missing_capability')
+        self.assertEqual(calls,[])

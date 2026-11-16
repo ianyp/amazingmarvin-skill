@@ -21,7 +21,10 @@ def main(argv=None):
     operation = 'unknown'
     try:
         parser = Parser(description=__doc__)
-        parser.add_argument('--full-access', action='store_true', help='Use full-access token header; never inferred from token')
+        access = parser.add_mutually_exclusive_group()
+        access.add_argument('--full-access', action='store_true', help='Use full-access token header; never inferred from token')
+        access.add_argument('--minimal-access', action='store_false', dest='full_access', help='Use limited/minimal token header (default)')
+        parser.set_defaults(full_access=False)
         parser.add_argument('--timezone', default='Europe/London')
         subs = parser.add_subparsers(dest='command', required=True)
         subs.add_parser('today').add_argument('--date')
