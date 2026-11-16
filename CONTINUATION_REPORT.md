@@ -16,7 +16,7 @@
 - Attachment verification: no dedicated synthetic uploaded attachment; upload has no documented route in this adapter. Do not use personal files as implicit fixtures.
 - Reward verification: claim/spend mutates account-wide history/balance; no isolated test account supplied. Reversal does not make a real account an isolated fixture.
 - Phone delivery/calendar sync require client evidence; server receipts do not prove these.
-- Repository push remains separately blocked by the previously observed Git credential context.
+- Repository push resolved: authenticated gh CLI supplies credentials via a per-command Git credential helper; no global configuration change required. Implementation through c7d0073 pushed and GitHub SHA verified.
 
 No credential values, personal task content, account profiles or temporary download URLs are included here. No new configuration, scheduler or inference-routing changes.
 
